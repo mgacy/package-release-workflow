@@ -1,0 +1,23 @@
+name: Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  unit_tests:
+    name: Run Tests
+    runs-on: macos-12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build and Test
+        uses: mxcl/xcodebuild@v1
+        with:
+          xcode: ^14
+          platform: iOS
