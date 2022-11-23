@@ -35,12 +35,12 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: Update Version.swift
+          commit-message: Bump Version.swift -> ${{ steps.bump.outputs.version }}
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           branch: example-patches
           delete-branch: true
-          title: '[CI] Bump Version'
+          title: '[CI] Bump Version (${{ steps.bump.outputs.version }})'
           body: |
             Update `Version.swift` with bumped version number
             - ${{ steps.bump.outputs.previous-version }} -> ${{ steps.bump.outputs.version }}
