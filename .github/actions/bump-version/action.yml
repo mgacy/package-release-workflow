@@ -1,0 +1,31 @@
+name: Bump Version
+description: Increments the version number from a version file.
+inputs:
+  version-file-path:
+    description: The path to the version file.
+    required: true
+  release-type:
+    description: Type of release. Must be one of `patch`, `minor`, `major`.
+    required: true
+outputs:
+  previous-version:
+    description: The previous version number.
+    value: ${{ steps.current.outputs.current-version }}
+  version:
+    description: The new version number.
+    value: ${{ steps.bump.outputs.new-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get Current Version
+      id: current
+      shell: bash
+      run: |
+        echo "::set-output name=current-version::$(grep -Eo '([0-9]+\.*)+' ${{ inputs.version-file-path }})"
+
+    - name: Bump Version
+      id: bump
+      shell: bash
+      run: |
+        echo "::set-output name=new-version::$( ${{ github.action_path }}/semver.sh bump ${{ inputs.release-type }} ${{ steps.current.outputs.current-version }})"

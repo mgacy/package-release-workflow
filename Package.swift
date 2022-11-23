@@ -5,6 +5,10 @@ import PackageDescription
 
 let package = Package(
     name: "Example",
+    platforms: [
+        .iOS(.v13),
+        .macOS(.v10_15)
+    ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -24,5 +28,15 @@ let package = Package(
         .testTarget(
             name: "ExampleTests",
             dependencies: ["Example"]),
+        .plugin(
+            name: "VersionFile",
+            capability: .command(
+                intent: .custom(
+                    verb: "version-file",
+                    description: "Generates a `Version.swift` file"
+                ),
+                permissions: [
+                    .writeToPackageDirectory(reason: "This command write the new `Version.swift` to the source root.")
+                ]))
     ]
 )
