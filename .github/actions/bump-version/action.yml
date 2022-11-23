@@ -8,6 +8,9 @@ inputs:
     description: Type of release. Must be one of `patch`, `minor`, `major`.
     required: true
 outputs:
+  previous-version:
+    description: The previous version number.
+    value: ${{ steps.current.outputs.current-version }}
   version:
     description: The new version number.
     value: ${{ steps.bump.outputs.new-version }}
