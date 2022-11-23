@@ -1,5 +1,5 @@
-name: Bump Version File
-description: Increments a version file.
+name: Bump Version
+description: Increments the version number from a version file.
 inputs:
   version-file-path:
     description: The path to the version file.
