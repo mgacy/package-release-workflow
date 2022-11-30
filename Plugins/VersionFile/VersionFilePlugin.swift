@@ -65,7 +65,7 @@ struct VersionFilePlugin: CommandPlugin {
             let fileContents = try makeVersion(Version(versionString: bumpedVersion))
             try fileContents.write(toFile: versionPath.string, atomically: true, encoding: .utf8)
 
-            print("Bumped \(currentVersion) -> \(bumpedVersion)")
+            print(bumpedVersion)
         }
     }
 
