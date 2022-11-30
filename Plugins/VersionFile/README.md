@@ -1,6 +1,6 @@
 # VersionFile Swift Package Plugin
 
-Generates `Version.swift` with the current package version.
+Generates and bumps `Version.swift` with the current package version.
 
 Usage:
 
