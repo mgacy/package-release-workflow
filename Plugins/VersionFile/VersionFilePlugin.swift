@@ -10,6 +10,15 @@ import PackagePlugin
 
 enum Constants {
     static let versionFile = "Version.swift"
+    static let versionPattern = #"([0-9]+\.*)+"#
+}
+
+enum Release: String, CaseIterable {
+    case patch
+    case minor
+    case major
+    case release
+    case prerelease = "prerel"
 }
 
 @main
@@ -25,11 +34,16 @@ struct VersionFilePlugin: CommandPlugin {
 
         var argExtractor = ArgumentExtractor(arguments)
         let selectedTargets = argExtractor.extractOption(named: "target")
-        guard let versionString = argExtractor.extractOption(named: "number").first else {
-            throw "Command must be called with a version argument."
+
+        guard let releaseString = argExtractor.extractOption(named: "bump").first else {
+            throw "Command must be called with a bump argument"
+        }
+        guard let release = Release(rawValue: releaseString) else {
+            let validOptions = Release.allCases.map { $0.rawValue }.joined(separator: " | ")
+            throw "Invalid bump value `\(releaseString)` - valid options are: \(validOptions)"
         }
 
-        let fileContents = try makeVersion(Version(versionString: versionString))
+        let semver = try context.tool(named: "semver")
 
         var targetsToProcess: [Target] = context.package.targets
         if selectedTargets.isEmpty == false {
@@ -39,8 +53,31 @@ struct VersionFilePlugin: CommandPlugin {
         for target in targetsToProcess {
             guard let target = target as? SourceModuleTarget, case .generic = target.kind else { continue }
             let versionPath = target.directory.appending(subpath: Constants.versionFile)
+
+            let currentVersion = try currentVersion(
+                path: versionPath)
+
+            let bumpedVersion = try run(
+                tool: semver,
+                with: ["bump", release.rawValue, currentVersion.description])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let fileContents = try makeVersion(Version(versionString: bumpedVersion))
             try fileContents.write(toFile: versionPath.string, atomically: true, encoding: .utf8)
+
+            print(bumpedVersion)
         }
+    }
+
+    func currentVersion(path: Path) throws -> Version {
+        let fileContents = try String(contentsOfFile: path.string)
+
+        let regEx = try NSRegularExpression(pattern: Constants.versionPattern)
+        guard let versionString = fileContents.matches(for: regEx).first else {
+            throw "Unable to parse current version number from \(fileContents)"
+        }
+
+        return try Version(versionString: versionString)
     }
 
     func makeVersion(_ version: Version) -> String {
@@ -51,5 +88,30 @@ struct VersionFilePlugin: CommandPlugin {
             static let number = "\(version)"
         }
         """
+    }
+}
+
+extension VersionFilePlugin {
+    func run(tool: PluginContext.Tool, with arguments: [String]) throws -> String {
+        let outputPipe = Pipe()
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: tool.path.string)
+        process.arguments = arguments
+        process.standardOutput = outputPipe
+
+        try process.run()
+        process.waitUntilExit()
+
+        // Check whether the subprocess invocation was successful.
+        if process.terminationReason == .exit && process.terminationStatus == 0 {
+            return String(
+                decoding: outputPipe.fileHandleForReading.readDataToEndOfFile(),
+                as: UTF8.self)
+        } else {
+            let problem = "\(process.terminationReason):\(process.terminationStatus)"
+            Diagnostics.error("\(tool) invocation failed: \(problem)")
+            throw problem
+        }
     }
 }

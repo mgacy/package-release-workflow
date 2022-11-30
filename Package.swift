@@ -37,6 +37,12 @@ let package = Package(
                 ),
                 permissions: [
                     .writeToPackageDirectory(reason: "This command write the new `Version.swift` to the source root.")
-                ]))
+                ]),
+            dependencies: [
+                .target(name: "semver")
+            ]),
+        .binaryTarget(
+            name: "semver",
+            path: "Artifacts/semver.artifactbundle"),
     ]
 )

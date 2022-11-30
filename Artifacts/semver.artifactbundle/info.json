@@ -1,0 +1,19 @@
+{
+    "schemaVersion": "1.0",
+    "artifacts": {
+        "semver": {
+            "version": "3.4.0",
+            "type": "executable",
+            "variants": [
+                {
+                    "path": "semver-3.4.0-linux-gnu/bin/semver.sh",
+                    "supportedTriples": ["x86_64-unknown-linux-gnu"]
+                },
+                {
+                    "path": "semver-3.4.0-macos/bin/semver.sh",
+                    "supportedTriples": ["x86_64-apple-macosx", "arm64-apple-macosx"]
+                },
+            ]
+        },
+    }
+}
